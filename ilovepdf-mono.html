@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iLovePDF • Monochrome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f8f8;
+            --text-primary: #111111;
+            --text-secondary: #666666;
+            --border-color: #e5e5e5;
+            --card-bg: #ffffff;
+            --accent: #111111;
+        }
+        
+        .dark {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --border-color: #333333;
+            --card-bg: #1a1a1a;
+            --accent: #f4f4f5;
+        }
+
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+        }
+
+        .mono-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+        }
+        
+        .mono-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            border-color: #555;
+        }
+
+        .section-header {
+            font-size: 2.75rem;
+            line-height: 1.05;
+            font-weight: 700;
+            letter-spacing: -.025em;
+        }
+
+        .tool-icon {
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border-radius: 9999px;
+            font-size: 1.5rem;
+        }
+
+        .dark .tool-icon {
+            background-color: #f4f4f5;
+            color: #111111;
+        }
+
+        .mono-nav {
+            background-color: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .dark .mono-nav {
+            background-color: rgba(15,15,15,0.95);
+        }
+
+        .mono-btn {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .mono-btn:hover {
+            background-color: #000000;
+            transform: translateY(-1px);
+        }
+
+        .dark .mono-btn {
+            background-color: #f4f4f5;
+            color: #111111;
+        }
+
+        .mono-btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .mono-btn-secondary:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .nav-active {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .tool-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .section-header {
+                font-size: 2.1rem;
+            }
+        }
+
+        .modal {
+            animation: fadeInModal 0.2s ease forwards;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nup-grid {
+            display: grid;
+            gap: 6px;
+            padding: 6px;
+            background: #111111;
+            border-radius: 4px;
+        }
+
+        .dark .nup-grid {
+            background: #222222;
+        }
+
+        .pdf-placeholder {
+            background: white;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .dark .pdf-placeholder {
+            background: #2a2a2a;
+            border-color: #444;
+        }
+
+        .ilove-logo {
+            font-weight: 800;
+            letter-spacing: -.05em;
+        }
+
+        .theme-toggle {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            color: var(--text-primary);
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .nup-option, .layout-option {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-mobile {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-desktop {
+                display: none;
+            }
+            .nav-mobile {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="mono-nav border-b border-[#e5e5e5] sticky top-0 z-50">
+        <div class="max-w-screen-2xl mx-auto">
+            <div class="px-4 md:px-8 py-4 flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center gap-x-3">
+                    <div class="flex items-center gap-x-2.5">
+                        <div class="w-9 h-9 bg-black flex items-center justify-center rounded-xl">
+                            <i class="fa-solid fa-file-pdf text-white text-3xl"></i>
+                        </div>
+                        <span class="ilove-logo text-3xl tracking-tighter font-black">iLovePDF</span>
+                    </div>
+                </div>
+                
+                <!-- Desktop Nav -->
+                <div class="hidden md:flex items-center gap-x-8 text-sm font-medium nav-desktop">
+                    <a href="#" class="nav-active">Tools</a>
+                    <a href="#" class="hover:text-[#333]">Features</a>
+                    <a href="#" class="hover:text-[#333]">Solutions</a>
+                    <a href="#" class="hover:text-[#333]">Pricing</a>
+                </div>
+                
+                <div class="flex items-center gap-x-2 md:gap-x-3">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="theme-toggle flex items-center justify-center" title="Toggle theme">
+                        <i class="fa-solid fa-moon text-lg"></i>
+                    </button>
+                    
+                    <!-- Auth Buttons -->
+                    <div class="hidden sm:flex items-center gap-x-2">
+                        <button onclick="showLoginModal()" 
+                                class="px-4 py-2 text-sm font-semibold hover:bg-[#f4f4f5] transition-colors rounded-2xl">
+                            Log in
+                        </button>
+                        <button onclick="showLoginModal()" 
+                                class="mono-btn px-5 py-2 text-sm font-semibold rounded-2xl">
+                            Sign up free
+                        </button>
+                    </div>
+                    
+                    <!-- Mobile Menu -->
+                    <div class="md:hidden">
+                        <button onclick="toggleMobileMenu()" class="p-2 text-xl">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden border-t border-[#e5e5e5] px-4 py-4">
+                <div class="flex flex-col gap-y-3 text-sm font-medium">
+                    <a href="#" class="py-1">Tools</a>
+                    <a href="#" class="py-1">Features</a>
+                    <a href="#" class="py-1">Solutions</a>
+                    <a href="#" class="py-1">Pricing</a>
+                    <div class="pt-3 border-t flex flex-col gap-y-2 sm:hidden">
+                        <button onclick="showLoginModal(); toggleMobileMenu()" 
+                                class="px-4 py-2 text-sm font-semibold border border-[#d1d5db] rounded-2xl">Log in</button>
+                        <button onclick="showLoginModal(); toggleMobileMenu()" 
+                                class="mono-btn px-5 py-2 text-sm font-semibold rounded-2xl">Sign up free</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero -->
+    <div class="max-w-screen-2xl mx-auto px-4 md:px-8 pt-10 pb-8">
+        <div class="grid md:grid-cols-12 gap-8 items-center">
+            <div class="md:col-span-7">
+                <div class="max-w-xl">
+                    <div class="inline-flex items-center gap-x-2 px-4 py-1.5 rounded-3xl bg-[#f4f4f5] text-xs font-semibold tracking-wider mb-6 dark:bg-[#222]">
+                        <div class="w-2 h-2 bg-black rounded-full animate-pulse"></div>
+                        <span>NEW: N-up PDF tool added</span>
+                    </div>
+                    
+                    <h1 class="section-header tracking-tighter leading-none text-balance">
+                        The PDF toolkit.<br>
+                        <span class="font-black">Reimagined.</span>
+                    </h1>
+                    
+                    <p class="mt-5 text-xl text-[#555555] max-w-md dark:text-[#a1a1aa]">
+                        Professional PDF tools in a beautiful monochrome interface. 
+                        Fast, private, and free.
+                    </p>
+                    
+                    <div class="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <button onclick="document.getElementById('tools-section').scrollIntoView({ behavior: 'smooth' })" 
+                                class="mono-btn w-full sm:w-auto px-8 py-4 rounded-3xl text-base flex items-center justify-center gap-x-2">
+                            <span>Browse all tools</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        
+                        <button onclick="showNupModal()" 
+                                class="mono-btn-secondary w-full sm:w-auto px-7 py-4 flex items-center justify-center gap-x-2 text-sm font-semibold rounded-3xl border">
+                            <i class="fa-solid fa-th mr-1.5"></i> 
+                            <span>Try N-up now</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="md:col-span-5 mt-8 md:mt-0">
+                <div class="mono-card p-1.5 rounded-3xl border border-[#e5e5e5]">
+                    <div class="bg-[#f8f8f8] dark:bg-[#222] rounded-[22px] p-6 flex flex-col items-center justify-center">
+                        <div class="flex items-center justify-center mb-4">
+                            <div class="flex items-center -space-x-1">
+                                <div class="w-9 h-9 bg-black flex items-center justify-center text-white text-xs font-black rounded-2xl">PDF</div>
+                                <div class="px-2 py-1 bg-white border border-[#d1d5db] text-xs font-bold rounded-2xl flex items-center shadow-sm dark:bg-[#333]">
+                                    <i class="fa-solid fa-th-large mr-1 text-xs"></i>
+                                    <span class="font-extrabold">N-up</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="font-semibold text-xl">4-up PDF ready</div>
+                            <div class="text-xs text-[#666666] mt-0.5 dark:text-[#a1a1aa]">Processed in 0.8s</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tools Section -->
+    <div id="tools-section" class="max-w-screen-2xl mx-auto px-4 md:px-8 py-10">
+        <div class="mb-8">
+            <h2 class="font-black tracking-tighter text-4xl">All tools</h2>
+            <p class="text-[#666] dark:text-[#a1a1aa]">Powerful, fast and private PDF tools.</p>
+        </div>
+        
+        <div class="tool-grid">
+            
+            <!-- Tool Cards -->
+            <div onclick="showMergeModal()" class="mono-card cursor-pointer p-5 rounded-3xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="tool-icon"><i class="fa-solid fa-link text-xl"></i></div>
+                    <div class="px-3 py-1 text-xs bg-[#f4f4f5] text-[#555] font-medium rounded-[14px] dark:bg-[#333]">Popular</div>
+                </div>
+                <div class="font-semibold text-xl">Merge PDF</div>
+                <div class="text-sm text-[#666] mt-1 dark:text-[#a1a1aa]">Combine multiple PDFs into a single document</div>
+            </div>
+            
+            <div onclick="showSplitModal()" class="mono-card cursor-pointer p-5 rounded-3xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="tool-icon"><i class="fa-solid fa-cut text-xl"></i></div>
+                </div>
+                <div class="font-semibold text-xl">Split PDF</div>
+                <div class="text-sm text-[#666] mt-1 dark:text-[#a1a1aa]">Split a PDF into multiple files by page range</div>
+            </div>
+            
+            <div onclick="showCompressModal()" class="mono-card cursor-pointer p-5 rounded-3xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="tool-icon"><i class="fa-solid fa-compress-arrows-alt text-xl"></i></div>
+                </div>
+                <div class="font-semibold text-xl">Compress PDF</div>
+                <div class="text-sm text-[#666] mt-1 dark:text-[#a1a1aa]">Reduce file size while maintaining quality</div>
+            </div>
+            
+            <div onclick="showConvertModal()" class="mono-card cursor-pointer p-5 rounded-3xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="tool-icon"><i class="fa-solid fa-exchange-alt text-xl"></i></div>
+                    <div class="px-3 py-1 text-xs bg-[#f4f4f5] text-[#555] font-medium rounded-[14px] dark:bg-[#333]">6 formats</div>
+                </div>
+                <div class="font-semibold text-xl">Convert PDF</div>
+                <div class="text-sm text-[#666] mt-1 dark:text-[#a1a1aa]">Convert PDF to Word, JPG, PPT &amp; more</div>
+            </div>
+            
+            <div onclick="showRotateModal()" class="mono-card cursor-pointer p-5 rounded-3xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="tool-icon"><i class="fa-solid fa-redo text-xl"></i></div>
+                </div>
+                <div class="font-semibold text-xl">Rotate PDF</div>
+                <div class="text-sm text-[#666] mt-1 dark:text-[#a1a1aa]">Rotate pages in your PDF document</div>
+            </div>
+            
+            <!-- N-up (Featured) -->
+            <div onclick="showNupModal()" class="mono-card cursor-pointer p-5 rounded-3xl border border-[#111111]">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="tool-icon bg-black dark:bg-white dark:text-black">
+                        <i class="fa-solid fa-th-large text-xl"></i>
+                    </div>
+                    <div class="px-3 py-1 text-xs bg-black text-white font-medium rounded-[14px]">NEW</div>
+                </div>
+                <div class="font-semibold text-xl flex items-center gap-x-2">
+                    N-up PDF
+                    <span class="px-1.5 py-px text-[10px] bg-[#111111] text-white font-bold rounded">PRO</span>
+                </div>
+                <div class="text-sm text-[#666] mt-1 dark:text-[#a1a1aa]">Print multiple pages on a single sheet. Save paper.</div>
+                
+                <div class="mt-4 flex gap-x-1 flex-wrap">
+                    <div class="px-2.5 py-px bg-[#111111] text-white text-xs font-bold flex items-center justify-center rounded mb-1">2-up</div>
+                    <div class="px-2.5 py-px bg-[#f4f4f5] text-[#666] text-xs font-bold flex items-center justify-center rounded mb-1">4-up</div>
+                    <div class="px-2.5 py-px bg-[#f4f4f5] text-[#666] text-xs font-bold flex items-center justify-center rounded mb-1">9-up</div>
+                </div>
+            </div>
+            
+            <div onclick="showWatermarkModal()" class="mono-card cursor-pointer p-5 rounded-3xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="tool-icon"><i class="fa-solid fa-stamp text-xl"></i></div>
+                </div>
+                <div class="font-semibold text-xl">Add Watermark</div>
+                <div class="text-sm text-[#666] mt-1 dark:text-[#a1a1aa]">Add text or image watermark to your PDF</div>
+            </div>
+            
+            <div onclick="showProtectModal()" class="mono-card cursor-pointer p-5 rounded-3xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="tool-icon"><i class="fa-solid fa-lock text-xl"></i></div>
+                </div>
+                <div class="font-semibold text-xl">Protect PDF</div>
+                <div class="text-sm text-[#666] mt-1 dark:text-[#a1a1aa]">Encrypt and password protect your PDFs</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-[#111111] text-white py-10 px-4 md:px-8">
+        <div class="max-w-screen-2xl mx-auto">
+            <div class="flex flex-col md:flex-row gap-y-8 justify-between items-center text-center md:text-left">
+                <div>
+                    <div class="flex items-center justify-center md:justify-start gap-x-2">
+                        <div class="w-8 h-8 bg-white flex items-center justify-center rounded-xl">
+                            <i class="fa-solid fa-file-pdf text-black text-2xl"></i>
+                        </div>
+                        <span class="font-black text-2xl tracking-tighter">iLovePDF</span>
+                    </div>
+                    <div class="mt-1 text-xs text-[#777]">© 2026 iLovePDF Inc.</div>
+                </div>
+                
+                <div class="flex flex-wrap gap-x-7 text-xs font-medium text-[#999] justify-center">
+                    <a href="#" class="hover:text-white">Privacy</a>
+                    <a href="#" class="hover:text-white">Terms</a>
+                    <a href="#" class="hover:text-white">Security</a>
+                    <a href="#" class="hover:text-white">Help center</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- N-up Modal -->
+    <div id="nup-modal" onclick="if (event.target.id === 'nup-modal') hideModal('nup-modal')" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" class="mono-card w-full max-w-2xl rounded-3xl overflow-hidden">
+            <div class="px-5 md:px-7 pt-6 pb-4 flex items-center justify-between border-b">
+                <div class="flex items-center gap-x-3">
+                    <div class="tool-icon"><i class="fa-solid fa-th-large"></i></div>
+                    <div>
+                        <span class="font-extrabold text-2xl md:text-3xl">N-up PDF</span>
+                        <span class="ml-2 px-2.5 py-px text-xs bg-black text-white rounded-2xl font-bold">NEW</span>
+                    </div>
+                </div>
+                <button onclick="hideModal('nup-modal')" class="w-9 h-9 flex items-center justify-center text-2xl text-[#777] hover:bg-[#f4f4f5] rounded-2xl">&times;</button>
+            </div>
+            
+            <div class="p-5 md:p-7">
+                <div id="nup-upload-area">
+                    <div id="nup-dropzone" class="border border-dashed border-[#d1d5db] px-6 py-9 transition-colors rounded-3xl flex flex-col items-center justify-center cursor-pointer">
+                        <div class="w-12 h-12 bg-[#111111] flex items-center justify-center text-white rounded-2xl mb-4">
+                            <i class="fa-solid fa-file-pdf fa-2x"></i>
+                        </div>
+                        <div class="font-bold text-center">Upload your PDF</div>
+                        <div class="text-xs text-center text-[#666] mt-1">Supports multi-page PDFs up to 50MB</div>
+                        
+                        <button onclick="document.getElementById('nup-file-input').click()" class="mt-4 mono-btn-secondary px-6 py-2 text-xs font-semibold rounded-3xl flex items-center gap-x-2">
+                            <i class="fa-solid fa-upload mr-1.5"></i> 
+                            <span>Choose file</span>
+                        </button>
+                        <input type="file" id="nup-file-input" accept=".pdf" class="hidden" onchange="handleNupFile(this)">
+                    </div>
+                </div>
+                
+                <div id="nup-options-area" class="hidden mt-2">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
+                        <div>
+                            <div id="nup-file-name" class="font-semibold"></div>
+                            <div id="nup-file-info" class="text-xs text-[#666]"></div>
+                        </div>
+                        <button onclick="resetNupUpload()" class="px-3 py-1 text-xs text-[#666] flex items-center gap-x-1 hover:text-black self-start">
+                            <i class="fa-solid fa-times"></i> <span class="font-medium">Change file</span>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <div class="mb-2 px-1">
+                                <div class="font-semibold text-sm">Pages per sheet</div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div onclick="selectNupOption(this, 2)" class="nup-option cursor-pointer px-4 py-2 bg-[#111111] text-white text-sm font-semibold text-center rounded-2xl" data-value="2">2-up</div>
+                                <div onclick="selectNupOption(this, 4)" class="nup-option cursor-pointer px-4 py-2 bg-[#f4f4f5] hover:bg-[#e5e5e5] text-sm font-semibold text-center rounded-2xl" data-value="4">4-up</div>
+                                <div onclick="selectNupOption(this, 6)" class="nup-option cursor-pointer px-4 py-2 bg-[#f4f4f5] hover:bg-[#e5e5e5] text-sm font-semibold text-center rounded-2xl" data-value="6">6-up</div>
+                                <div onclick="selectNupOption(this, 9)" class="nup-option cursor-pointer px-4 py-2 bg-[#f4f4f5] hover:bg-[#e5e5e5] text-sm font-semibold text-center rounded-2xl" data-value="9">9-up</div>
+                                <div onclick="selectNupOption(this, 12)" class="nup-option cursor-pointer px-4 py-2 bg-[#f4f4f5] hover:bg-[#e5e5e5] text-sm font-semibold text-center rounded-2xl" data-value="12">12-up</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="mb-2 px-1">
+                                <div class="font-semibold text-sm">Layout</div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div onclick="selectLayoutOption(this, 'horizontal')" class="layout-option cursor-pointer px-4 py-[9px] flex items-center justify-center text-sm font-semibold bg-[#111111] text-white rounded-2xl" data-value="horizontal">Horizontal</div>
+                                <div onclick="selectLayoutOption(this, 'vertical')" class="layout-option cursor-pointer px-4 py-[9px] flex items-center justify-center text-sm font-semibold bg-[#f4f4f5] hover:bg-[#e5e5e5] text-[#111] rounded-2xl" data-value="vertical">Vertical</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <div class="flex justify-between items-center mb-2 px-1">
+                            <div class="font-semibold text-sm">Preview</div>
+                            <div onclick="updateNupPreview()" class="cursor-pointer text-xs px-3 py-1 hover:bg-[#f4f4f5] text-[#666] font-medium flex items-center gap-x-1 rounded-2xl">
+                                <i class="fa-solid fa-sync-alt text-xs"></i> <span>Refresh</span>
+                            </div>
+                        </div>
+                        
+                        <div id="nup-preview" class="nup-grid border border-[#d1d5db] bg-[#111111] p-3 rounded-2xl min-h-[140px] grid grid-cols-2 md:grid-cols-3 gap-2" style="grid-template-columns: repeat(2, 1fr);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-5 md:px-7 py-5 bg-[#f8f8f8] dark:bg-[#222] flex flex-col md:flex-row items-center justify-between gap-3">
+                <button onclick="hideModal('nup-modal')" class="px-6 py-2.5 text-sm font-semibold w-full md:w-auto">Cancel</button>
+                <button onclick="processNup()" id="nup-process-btn" class="mono-btn px-7 py-2.5 text-sm font-semibold rounded-2xl flex items-center justify-center gap-x-2 disabled:opacity-40 w-full md:w-auto" disabled>
+                    <span id="nup-btn-text">Create N-up PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Simple Modals -->
+    <div id="simple-modal" onclick="if (event.target.id === 'simple-modal') hideSimpleModal()" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" class="mono-card w-full max-w-md rounded-3xl overflow-hidden">
+            <div class="px-5 md:px-7 pt-6 pb-4 flex items-center justify-between border-b">
+                <div class="flex items-center gap-x-3">
+                    <div class="tool-icon"><i id="simple-modal-icon" class="fa-solid fa-link"></i></div>
+                    <span id="simple-modal-title" class="font-bold text-2xl"></span>
+                </div>
+                <button onclick="hideSimpleModal()" class="w-9 h-9 flex items-center justify-center text-xl text-[#777] hover:bg-[#f4f4f5] rounded-2xl">&times;</button>
+            </div>
+            
+            <div class="p-6">
+                <div id="simple-upload-area" class="border border-dashed border-[#d1d5db] px-6 py-9 rounded-3xl flex flex-col items-center justify-center cursor-pointer" onclick="document.getElementById('simple-file-input').click()">
+                    <i class="fa-solid fa-file-pdf text-4xl mb-3 text-[#777]"></i>
+                    <div class="font-semibold">Upload PDF</div>
+                    <input type="file" id="simple-file-input" accept=".pdf" class="hidden" onchange="handleSimpleFile(this)">
+                </div>
+            </div>
+            
+            <div class="px-5 md:px-7 py-5 bg-[#f8f8f8] dark:bg-[#222] flex items-center justify-between">
+                <button onclick="hideSimpleModal()" class="px-6 py-2.5 text-sm font-semibold">Cancel</button>
+                <button onclick="processSimpleModal()" id="simple-process-btn" class="mono-btn px-7 py-2.5 text-sm font-semibold rounded-2xl flex items-center gap-x-2 disabled:opacity-50" disabled>
+                    <span id="simple-process-text">Process</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[200]"></div>
+    
+    <script>
+        // Tailwind dark mode
+        function initTailwind() {
+            tailwind.config = {
+                darkMode: 'class'
+            };
+        }
+        
+        // Theme
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        
+        function applyTheme(theme) {
+            const html = document.documentElement;
+            html.classList.toggle('dark', theme === 'dark');
+            localStorage.setItem('theme', theme);
+            currentTheme = theme;
+            updateThemeIcon();
+        }
+        
+        function updateThemeIcon() {
+            const toggle = document.getElementById('theme-toggle');
+            if (!toggle) return;
+            const icon = toggle.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-moon', currentTheme === 'light');
+                icon.classList.toggle('fa-sun', currentTheme === 'dark');
+            }
+        }
+        
+        function toggleTheme() {
+            applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+        }
+        
+        // Mobile menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+        
+        // Modal helpers
+        function showModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.remove('hidden');
+            }
+        }
+        
+        function hideModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.add('hidden');
+            }
+            
+            if (id === 'nup-modal') resetNupUpload();
+        }
+        
+        function showToast(message, withDownload = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-x-3 bg-black text-white px-5 py-4 rounded-3xl shadow-xl`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-x-3">
+                    <i class="fa-solid fa-check-circle text-emerald-400"></i>
+                    <span class="font-semibold">${message}</span>
+                </div>
+                <button class="px-3 text-xs font-medium text-[#ccc]">Close</button>
+            `;
+            toast.querySelector('button').onclick = () => toast.remove();
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+            }, withDownload ? 4200 : 2800);
+        }
+        
+        // N-up
+        let nupFile = null;
+        let currentNup = 4;
+        let currentLayout = 'horizontal';
+        
+        function showNupModal() {
+            showModal('nup-modal');
+            
+            const upload = document.getElementById('nup-upload-area');
+            const options = document.getElementById('nup-options-area');
+            const btn = document.getElementById('nup-process-btn');
+            
+            upload.style.display = 'block';
+            options.classList.add('hidden');
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                const def = document.querySelector('.nup-option[data-value="4"]');
+                if (def) selectNupOption(def, 4);
+            }, 150);
+        }
+        
+        function handleNupFile(input) {
+            const file = input.files[0];
+            if (!file || !file.name.endsWith('.pdf')) {
+                alert('Please upload a PDF file');
+                return;
+            }
+            
+            nupFile = file;
+            
+            document.getElementById('nup-upload-area').style.display = 'none';
+            document.getElementById('nup-options-area').classList.remove('hidden');
+            document.getElementById('nup-process-btn').disabled = false;
+            
+            document.getElementById('nup-file-name').innerHTML = `<i class="fa-solid fa-file-pdf mr-1.5"></i> ${file.name}`;
+            document.getElementById('nup-file-info').innerHTML = `${(file.size / 1024 / 1024).toFixed(1)} MB`;
+            
+            updateNupPreview();
+        }
+        
+        function selectNupOption(el, value) {
+            document.querySelectorAll('.nup-option').forEach(e => {
+                e.classList.remove('bg-[#111111]', 'text-white');
+                e.classList.add('bg-[#f4f4f5]', 'text-[#111]');
+            });
+            el.classList.remove('bg-[#f4f4f5]', 'text-[#111]');
+            el.classList.add('bg-[#111111]', 'text-white');
+            
+            currentNup = value;
+            updateNupPreview();
+        }
+        
+        function selectLayoutOption(el, layout) {
+            document.querySelectorAll('.layout-option').forEach(e => {
+                e.classList.remove('bg-[#111111]', 'text-white');
+                e.classList.add('bg-[#f4f4f5]', 'text-[#111]');
+            });
+            el.classList.remove('bg-[#f4f4f5]', 'text-[#111]');
+            el.classList.add('bg-[#111111]', 'text-white');
+            
+            currentLayout = layout;
+            updateNupPreview();
+        }
+        
+        function updateNupPreview() {
+            const preview = document.getElementById('nup-preview');
+            preview.innerHTML = '';
+            
+            let cols = currentNup <= 4 ? 2 : currentNup <= 9 ? 3 : 4;
+            preview.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            
+            for (let i = 1; i <= Math.min(currentNup, 9); i++) {
+                const page = document.createElement('div');
+                page.className = `pdf-placeholder aspect-[1.414/1] flex items-center justify-center text-xs font-medium border border-[#d1d5db] rounded-md`;
+                page.innerHTML = `<div class="text-center"><div class="font-bold">Page ${i}</div></div>`;
+                
+                if (currentLayout === 'horizontal') page.style.aspectRatio = '1.8/1';
+                preview.appendChild(page);
+            }
+        }
+        
+        function resetNupUpload() {
+            nupFile = null;
+            document.getElementById('nup-upload-area').style.display = 'block';
+            document.getElementById('nup-options-area').classList.add('hidden');
+            document.getElementById('nup-process-btn').disabled = true;
+            document.getElementById('nup-preview').innerHTML = '';
+        }
+        
+        function processNup() {
+            const btn = document.getElementById('nup-process-btn');
+            btn.innerHTML = `<span class="flex items-center gap-x-2"><i class="fa-solid fa-spinner fa-spin"></i> Processing...</span>`;
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                hideModal('nup-modal');
+                const filename = nupFile ? nupFile.name.replace('.pdf', `-nup-${currentNup}.pdf`) : `nup-${currentNup}.pdf`;
+                showToast(`N-up PDF created! (${currentNup}-up)`, true);
+                createMockDownload(filename, `N-up PDF: ${currentNup} pages per sheet`);
+                resetNupUpload();
+                btn.innerHTML = `Create N-up PDF`;
+                btn.disabled = false;
+            }, 1800);
+        }
+        
+        // Simple modals system
+        let currentSimpleModal = null;
+        
+        function showSimpleModal(title, icon) {
+            currentSimpleModal = { title, icon };
+            
+            const modal = document.getElementById('simple-modal');
+            document.getElementById('simple-modal-title').textContent = title;
+            document.getElementById('simple-modal-icon').className = `fa-solid fa-${icon}`;
+            
+            document.getElementById('simple-upload-area').style.display = 'flex';
+            document.getElementById('simple-process-btn').disabled = true;
+            document.getElementById('simple-process-text').textContent = title;
+            
+            modal.style.display = 'flex';
+            modal.classList.remove('hidden');
+        }
+        
+        function hideSimpleModal() {
+            const modal = document.getElementById('simple-modal');
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+            currentSimpleModal = null;
+        }
+        
+        function handleSimpleFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            document.getElementById('simple-process-btn').disabled = false;
+        }
+        
+        function processSimpleModal() {
+            if (!currentSimpleModal) return;
+            
+            const btn = document.getElementById('simple-process-btn');
+            btn.innerHTML = `<span class="flex items-center gap-x-2"><i class="fa-solid fa-spinner fa-spin"></i> Processing...</span>`;
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                hideSimpleModal();
+                showToast(`${currentSimpleModal.title} completed!`, true);
+                createMockDownload(`${currentSimpleModal.title.toLowerCase().replace(/\s+/g, '-')}.pdf`, `${currentSimpleModal.title} result`);
+            }, 1600);
+        }
+        
+        // Tool modals
+        function showMergeModal() { showSimpleModal('Merge PDF', 'link'); }
+        function showSplitModal() { showSimpleModal('Split PDF', 'cut'); }
+        function showCompressModal() { showSimpleModal('Compress PDF', 'compress-arrows-alt'); }
+        function showConvertModal() { showSimpleModal('Convert PDF', 'exchange-alt'); }
+        function showRotateModal() { showSimpleModal('Rotate PDF', 'redo'); }
+        function showWatermarkModal() { showSimpleModal('Add Watermark', 'stamp'); }
+        function showProtectModal() { showSimpleModal('Protect PDF', 'lock'); }
+        
+        // Mock download
+        function createMockDownload(filename, description) {
+            const link = document.createElement('a');
+            const content = `iLovePDF Monochrome\n\nFile: ${filename}\n${description}\n\nGenerated: ${new Date().toLocaleDateString()}`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function showLoginModal() {
+            const modal = document.createElement('div');
+            modal.className = `fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[200] p-4`;
+            modal.innerHTML = `
+                <div onclick="event.target.remove()" class="mono-card w-full max-w-sm rounded-3xl overflow-hidden">
+                    <div class="p-7">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="font-black text-3xl">Sign in</div>
+                            <button onclick="event.target.closest('.fixed').remove()" class="text-3xl leading-none text-[#777]">&times;</button>
+                        </div>
+                        
+                        <div class="space-y-5">
+                            <div>
+                                <div class="text-xs font-semibold px-1 mb-1.5">Email address</div>
+                                <input type="email" value="demo@ilovepdf.com" class="border px-4 py-[10px] w-full text-sm rounded-2xl border-[#d1d5db]">
+                            </div>
+                            
+                            <div>
+                                <div class="text-xs font-semibold px-1 mb-1.5">Password</div>
+                                <input type="password" value="demo123" class="border px-4 py-[10px] w-full text-sm rounded-2xl border-[#d1d5db]">
+                            </div>
+                            
+                            <div>
+                                <button onclick="loginUser(this)" class="mono-btn w-full py-3.5 text-sm font-bold rounded-3xl">Sign in</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function loginUser(btn) {
+            btn.innerHTML = `<span class="flex items-center justify-center gap-x-2"><i class="fa-solid fa-spinner fa-spin"></i> Signing in...</span>`;
+            setTimeout(() => {
+                btn.closest('.fixed').remove();
+                showToast("Successfully signed in. Welcome back!");
+            }, 1100);
+        }
+        
+        // Initialize
+        function initialize() {
+            initTailwind();
+            applyTheme(currentTheme);
+            
+            // Theme toggle
+            document.getElementById('theme-toggle').onclick = toggleTheme;
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.fixed.inset-0[style*="flex"]').forEach(m => {
+                        m.style.display = 'none';
+                        m.classList.add('hidden');
+                    });
+                }
+                if (e.key === '?') showNupModal();
+            });
+            
+            console.log('%c[iLovePDF Monochrome] Mobile-optimized version ready.', 'color:#777');
+        }
+        
+        window.onload = initialize;
+    </script>
+</body>
+</html>
