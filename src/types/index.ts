@@ -1,8 +1,11 @@
+export type ToolCategory = 'organise' | 'optimize' | 'convert' | 'edit' | 'security' | 'intelligence';
+
 export interface Tool {
     id: string;
     name: string;
     icon: string;
     description: string;
+    category: ToolCategory;
     badge?: string;
     featured?: boolean;
 }
@@ -30,17 +33,6 @@ export interface MergeFile {
     name: string;
     size: number;
 }
-
-export type ModalType =
-    | 'merge'
-    | 'nup'
-    | 'split'
-    | 'compress'
-    | 'convert'
-    | 'rotate'
-    | 'watermark'
-    | 'protect'
-    | 'login';
 
 export interface ToastOptions {
     message: string;

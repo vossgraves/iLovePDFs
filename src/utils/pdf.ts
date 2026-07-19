@@ -93,3 +93,103 @@ export async function getPdfJs() {
 
     return pdfjs;
 }
+
+// ---------------------------------------------------------------------------
+// Rendering & text extraction helpers (built on pdfjs)
+// ---------------------------------------------------------------------------
+
+export interface RenderProgress {
+    current: number;
+    total: number;
+}
+
+/** Renders every page (up to maxPages) of a PDF to a canvas at the given DPI. */
+export async function renderPdfPages(
+    bytes: ArrayBuffer,
+    dpi = 150,
+    maxPages = Infinity,
+    onProgress?: (p: RenderProgress) => void
+): Promise<HTMLCanvasElement[]> {
+    const pdfjs = await getPdfJs();
+    // pdfjs detaches (transfers) the buffer it receives — hand it a copy.
+    const doc = await pdfjs.getDocument({ data: bytes.slice(0) }).promise;
+
+    try {
+        const total = Math.min(doc.numPages, maxPages);
+        const canvases: HTMLCanvasElement[] = [];
+
+        for (let i = 1; i <= total; i++) {
+            const page = await doc.getPage(i);
+            const viewport = page.getViewport({ scale: dpi / 72 });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.ceil(viewport.width);
+            canvas.height = Math.ceil(viewport.height);
+            await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
+            canvases.push(canvas);
+            onProgress?.({ current: i, total });
+        }
+
+        return canvases;
+    } finally {
+        void doc.destroy();
+    }
+}
+
+/** Encodes a canvas as JPEG (or PNG) bytes. */
+export function canvasToBytes(canvas: HTMLCanvasElement, type: 'image/jpeg' | 'image/png' = 'image/jpeg', quality = 0.85): Promise<Uint8Array> {
+    return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+            if (!blob) {
+                reject(new Error('Could not encode the rendered page.'));
+                return;
+            }
+            blob.arrayBuffer().then(buf => resolve(new Uint8Array(buf)), reject);
+        }, type, quality);
+    });
+}
+
+export interface PageTextItem {
+    text: string;
+    fontSize: number;
+}
+
+/** Extracts text items (with approximate font size) for every page. */
+export async function extractTextByPage(bytes: ArrayBuffer): Promise<PageTextItem[][]> {
+    const pdfjs = await getPdfJs();
+    const doc = await pdfjs.getDocument({ data: bytes.slice(0) }).promise;
+
+    try {
+        const pages: PageTextItem[][] = [];
+
+        for (let p = 1; p <= doc.numPages; p++) {
+            const page = await doc.getPage(p);
+            const content = await page.getTextContent();
+            const items: PageTextItem[] = [];
+
+            for (const item of content.items) {
+                if ('str' in item && item.str.trim().length > 0) {
+                    items.push({
+                        text: item.str,
+                        fontSize: Math.abs(item.transform?.[3] ?? 0) || item.height || 0
+                    });
+                }
+            }
+
+            pages.push(items);
+        }
+
+        return pages;
+    } finally {
+        void doc.destroy();
+    }
+}
+
+/** Plain full-document text (pages joined with blank lines). */
+export async function extractPlainText(bytes: ArrayBuffer): Promise<string> {
+    const pages = await extractTextByPage(bytes);
+    return pages
+        .map(items => items.map(i => i.text).join(' '))
+        .join('\n\n')
+        .replace(/[ \t]+/g, ' ')
+        .trim();
+}

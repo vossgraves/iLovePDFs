@@ -9,8 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@jspawn/qpdf-wasm": "^0.0.2",
+    "@matbee/libreoffice-converter": "^2.6.0",
+    "html2canvas": "^1.4.1",
+    "jszip": "^3.10.1",
     "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^4.2.67"
+    "pdfjs-dist": "^4.2.67",
+    "tesseract.js": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

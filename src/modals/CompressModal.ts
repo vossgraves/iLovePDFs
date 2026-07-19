@@ -1,8 +1,30 @@
-import { BaseModal } from './BaseModal';
+import { ToolModal } from './ToolModal';
 import { ModalManager } from '../utils/modal';
 import { ToastManager } from '../utils/toast';
+import { downloadPdf, outputName, renderPdfPages, canvasToBytes } from '../utils/pdf';
+import { recordProcessed } from '../utils/stats';
 
-export class CompressModal extends BaseModal {
+interface Preset {
+    id: string;
+    label: string;
+    sub: string;
+    dpi: number;
+    quality: number;
+}
+
+const PRESETS: Preset[] = [
+    { id: 'extreme', label: 'Extreme', sub: '72 DPI · smallest size', dpi: 72, quality: 0.5 },
+    { id: 'recommended', label: 'Recommended', sub: '150 DPI · balanced', dpi: 150, quality: 0.75 },
+    { id: 'less', label: 'High quality', sub: '200 DPI · light compression', dpi: 200, quality: 0.88 }
+];
+
+/**
+ * Compress PDF — real compression by re-rendering pages at a lower
+ * resolution and re-encoding them as JPEG. Honestly labeled as lossy.
+ */
+export class CompressModal extends ToolModal {
+    private preset: Preset = PRESETS[1];
+
     constructor(modalManager: ModalManager, toastManager: ToastManager) {
         super('compress-modal', modalManager, toastManager);
     }
@@ -15,30 +37,31 @@ export class CompressModal extends BaseModal {
 
     private renderModal(): void {
         const container = document.getElementById('modal-container')!;
-        
-        const content = `
-            <div id="compress-dropzone" class="border border-dashed border-[#d1d5db] dark:border-[#404040] px-6 py-9 rounded-3xl flex flex-col items-center justify-center cursor-pointer">
-                <i class="fa-solid fa-file-pdf text-4xl mb-3 text-[#777]"></i>
-                <div class="font-semibold">Upload PDF</div>
-                <input type="file" id="compress-file-input" accept=".pdf" class="hidden">
-            </div>
-            
-            <div id="compress-options" class="hidden mt-5">
-                <div class="px-1">
-                    <div class="flex justify-between items-baseline mb-1">
-                        <div class="font-semibold text-sm">Compression level</div>
-                        <div id="compress-value" class="font-black text-xl">80%</div>
-                    </div>
-                    
-                    <input type="range" id="compress-slider" min="30" max="95" step="5" value="80" class="w-full accent-black dark:accent-white">
 
-                    <div class="flex justify-between text-xs px-1 mt-1 text-[#666] dark:text-[#a1a1aa]">
-                        <div>High quality</div>
-                        <div>Max compression</div>
-                    </div>
-                    
-                    <div id="compress-file-info" class="mt-4 text-xs flex justify-between px-1"></div>
+        const chips = PRESETS.map(p => `
+            <div class="option-chip cursor-pointer px-3 py-2.5 bg-[#f4f4f5] dark:bg-[#262626] hover:bg-[#e5e5e5] dark:hover:bg-[#333333] rounded-2xl text-center ${p.id === this.preset.id ? 'active-option' : ''}" data-preset="${p.id}">
+                <div class="font-semibold text-sm">${p.label}</div>
+                <div class="text-[10px] opacity-70 mt-0.5">${p.sub}</div>
+            </div>
+        `).join('');
+
+        const content = `
+            <div id="compress-upload-area">
+                ${this.dropzoneHTML('compress-dropzone', 'compress-file-input', 'Upload your PDF', 'Choose a compression level below after uploading')}
+            </div>
+
+            <div id="compress-options" class="hidden mt-5">
+                ${this.fileRowHTML('compress-file-name', 'compress-file-info', 'compress-change-btn')}
+
+                <div class="font-semibold text-sm mb-2 px-1">Compression level</div>
+                <div class="grid grid-cols-3 gap-2" id="compress-presets">${chips}</div>
+
+                <div class="text-xs text-[#666] dark:text-[#a1a1aa] px-1 mt-3">
+                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    Pages are re-rendered as images — great size savings, but text becomes non-selectable.
                 </div>
+
+                <div id="compress-status" class="text-xs text-[#666] dark:text-[#a1a1aa] px-1 mt-2"></div>
             </div>
         `;
 
@@ -52,64 +75,57 @@ export class CompressModal extends BaseModal {
     }
 
     protected setupEventListeners(): void {
-        const dropzone = document.getElementById('compress-dropzone')!;
-        const fileInput = document.getElementById('compress-file-input') as HTMLInputElement;
-        const compressBtn = document.getElementById('compress-btn')!;
-        const slider = document.getElementById('compress-slider') as HTMLInputElement;
+        this.wireUpload('compress-dropzone', 'compress-file-input', files => void this.handleFile(files[0]));
+        this.wireChangeButton('compress-change-btn', 'compress-upload-area', 'compress-options', 'compress-btn');
 
-        dropzone.addEventListener('click', () => fileInput.click());
-        
-        fileInput.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            if (target.files?.[0]) this.handleFile(target.files[0]);
+        document.querySelectorAll('#compress-presets .option-chip').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('#compress-presets .option-chip').forEach(e => e.classList.remove('active-option'));
+                el.classList.add('active-option');
+                this.preset = PRESETS.find(p => p.id === (el as HTMLElement).dataset.preset)!;
+            });
         });
 
-        if (slider) {
-            slider.oninput = () => this.updateValue();
+        document.getElementById('compress-btn')!.addEventListener('click', () =>
+            this.run('compress-btn', 'Compressing…', () => this.process()));
+    }
+
+    private async handleFile(file: File): Promise<void> {
+        if (!(await this.inspect(file))) return;
+        this.showOptions('compress-upload-area', 'compress-options', 'compress-btn', 'compress-file-name', 'compress-file-info');
+    }
+
+    private async process(): Promise<void> {
+        const { dpi, quality } = this.preset;
+        const originalSize = this.pdfBytes!.byteLength;
+
+        const canvases = await renderPdfPages(this.pdfBytes!, dpi, Infinity, p =>
+            this.setStatus('compress-status', `Processing page ${p.current} of ${p.total}…`));
+
+        const { PDFDocument } = await import('pdf-lib');
+        const out = await PDFDocument.create();
+
+        for (const canvas of canvases) {
+            const jpeg = await canvasToBytes(canvas, 'image/jpeg', quality);
+            const image = await out.embedJpg(jpeg);
+            const page = out.addPage([(canvas.width * 72) / dpi, (canvas.height * 72) / dpi]);
+            page.drawImage(image, { x: 0, y: 0, width: page.getWidth(), height: page.getHeight() });
         }
 
-        compressBtn.addEventListener('click', () => this.processCompress());
-    }
+        const bytes = await out.save();
+        this.setStatus('compress-status', '');
 
-    private handleFile(file: File): void {
-        const dropzone = document.getElementById('compress-dropzone')!;
-        const options = document.getElementById('compress-options')!;
-        const btn = document.getElementById('compress-btn')!;
+        const ratio = ((1 - bytes.length / originalSize) * 100).toFixed(0);
+        downloadPdf(bytes, outputName(this.fileName, '-compressed'));
+        recordProcessed({ pdfs: 1, pages: canvases.length });
 
-        dropzone.style.display = 'none';
-        options.classList.remove('hidden');
-        (btn as HTMLButtonElement).disabled = false;
-
-        document.getElementById('compress-file-info')!.innerHTML = `
-            <div class="flex justify-between items-center text-xs">
-                <div>${file.name}</div>
-                <div class="font-semibold">${(file.size / 1024 / 1024).toFixed(1)} MB</div>
-            </div>
-        `;
-
-        this.updateValue();
-    }
-
-    private updateValue(): void {
-        const slider = document.getElementById('compress-slider') as HTMLInputElement;
-        const valueEl = document.getElementById('compress-value')!;
-        if (slider && valueEl) {
-            valueEl.innerHTML = slider.value + '%';
-        }
-    }
-
-    private processCompress(): void {
-        const btn = document.getElementById('compress-btn')!;
-        const slider = document.getElementById('compress-slider') as HTMLInputElement;
-        const level = slider.value;
-
-        btn.innerHTML = `<span class="flex items-center gap-x-2"><i class="fa-solid fa-spinner fa-spin"></i> Compressing...</span>`;
-        (btn as HTMLButtonElement).disabled = true;
-
-        setTimeout(() => {
-            this.hide();
-            this.showToast(`PDF compressed by ${level}%!`, true);
-            this.createMockDownload('compressed-document.pdf', `Compressed PDF (${level}% smaller)`);
-        }, 1900);
+        this.hide();
+        const grew = bytes.length >= originalSize;
+        this.showToast(
+            grew
+                ? 'Note: output is not smaller than the original (already well-compressed).'
+                : `Compressed by ${ratio}% — ${(originalSize / 1024 / 1024).toFixed(1)} MB → ${(bytes.length / 1024 / 1024).toFixed(1)} MB.`,
+            true
+        );
     }
 }

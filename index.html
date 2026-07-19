@@ -15,6 +15,9 @@
             } catch (e) { /* no-op */ }
         })();
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/src/styles/main.css">
 </head>
@@ -40,11 +43,11 @@
 
                 <div class="flex items-center gap-x-3">
                     <button id="login-btn"
-                            class="px-5 py-2.5 text-sm font-semibold hover:bg-[#f4f4f5] dark:hover:bg-[#262626] transition-colors rounded-2xl">
+                            class="hidden sm:block px-5 py-2.5 text-sm font-semibold hover:bg-[#f4f4f5] dark:hover:bg-[#262626] transition-colors rounded-2xl">
                         Log in
                     </button>
                     <button id="signup-btn"
-                            class="mono-btn px-6 py-2.5 text-sm font-semibold rounded-2xl">
+                            class="hidden sm:block mono-btn px-6 py-2.5 text-sm font-semibold rounded-2xl">
                         Sign up free
                     </button>
 
@@ -53,8 +56,13 @@
                         <i class="fa-solid fa-moon text-lg"></i>
                     </button>
 
-                    <div class="md:hidden">
-                        <button class="p-2 text-xl"><i class="fa-solid fa-bars"></i></button>
+                    <div class="md:hidden relative">
+                        <button id="mobile-menu-btn" class="p-2 text-xl" title="Menu"><i class="fa-solid fa-bars"></i></button>
+                        <div id="mobile-menu" class="hidden absolute right-0 top-12 w-52 mono-card rounded-2xl p-2 flex-col gap-1 z-[60] shadow-xl">
+                            <a href="#tools-section" id="mobile-tools-link" class="px-4 py-2.5 text-sm font-semibold rounded-xl hover:bg-[#f4f4f5] dark:hover:bg-[#262626]">Tools</a>
+                            <button id="mobile-login-btn" class="text-left px-4 py-2.5 text-sm font-semibold rounded-xl hover:bg-[#f4f4f5] dark:hover:bg-[#262626]">Log in</button>
+                            <button id="mobile-signup-btn" class="mono-btn px-4 py-2.5 text-sm font-semibold rounded-xl">Sign up free</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,7 +70,7 @@
     </nav>
 
     <!-- Hero -->
-    <div class="max-w-screen-2xl mx-auto px-8 pt-12 pb-8">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-8 pt-12 pb-8">
         <div class="grid md:grid-cols-12 gap-8 items-center">
             <div class="md:col-span-7">
                 <div class="max-w-xl">
@@ -81,7 +89,7 @@
                         Fast, private, and free.
                     </p>
 
-                    <div class="mt-8 flex items-center gap-x-3">
+                    <div class="mt-8 flex flex-wrap items-center gap-3">
                         <button id="browse-tools-btn"
                                 class="mono-btn px-8 py-4 rounded-3xl text-base flex items-center gap-x-2">
                             <span>Browse all tools</span>
@@ -154,17 +162,23 @@
     </div>
 
     <!-- Tools Section -->
-    <div id="tools-section" class="max-w-screen-2xl mx-auto px-8 py-12">
-        <div class="flex items-end justify-between mb-7">
+    <div id="tools-section" class="max-w-screen-2xl mx-auto px-4 sm:px-8 py-12">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7">
             <div>
                 <h2 class="font-black tracking-tighter text-4xl">All tools</h2>
                 <p class="text-[#666] dark:text-[#a1a1aa]">Powerful, fast and private PDF tools.</p>
             </div>
+            <div class="relative w-full md:w-80">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[#777] text-sm"></i>
+                <input id="tool-search" type="text" placeholder="Search tools…"
+                       class="w-full border border-[#d1d5db] dark:border-[#404040] rounded-3xl pl-10 pr-4 py-2.5 text-sm bg-white dark:bg-[#1f1f1f]">
+            </div>
         </div>
 
-        <!-- Tools Grid -->
-        <div class="tool-grid" id="tools-grid">
-            <!-- Populated by TypeScript -->
+        <!-- Category sections (populated by TypeScript) -->
+        <div id="tools-sections"></div>
+        <div id="tools-empty" class="hidden text-center text-sm text-[#666] dark:text-[#a1a1aa] py-10">
+            No tools match your search.
         </div>
     </div>
 

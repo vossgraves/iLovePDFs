@@ -1,8 +1,13 @@
-import { BaseModal } from './BaseModal';
+import { ToolModal } from './ToolModal';
 import { ModalManager } from '../utils/modal';
 import { ToastManager } from '../utils/toast';
+import { downloadPdf, outputName } from '../utils/pdf';
+import { recordProcessed } from '../utils/stats';
 
-export class WatermarkModal extends BaseModal {
+/**
+ * Add Watermark — stamps rotated, translucent text across every page.
+ */
+export class WatermarkModal extends ToolModal {
     constructor(modalManager: ModalManager, toastManager: ToastManager) {
         super('watermark-modal', modalManager, toastManager);
     }
@@ -15,15 +20,15 @@ export class WatermarkModal extends BaseModal {
 
     private renderModal(): void {
         const container = document.getElementById('modal-container')!;
-        
+
         const content = `
-            <div id="watermark-dropzone" class="border border-dashed border-[#d1d5db] dark:border-[#404040] px-6 py-9 rounded-3xl flex flex-col items-center justify-center cursor-pointer">
-                <i class="fa-solid fa-file-pdf text-4xl mb-3 text-[#777]"></i>
-                <div class="font-semibold">Upload PDF</div>
-                <input type="file" id="watermark-file-input" accept=".pdf" class="hidden">
+            <div id="watermark-upload-area">
+                ${this.dropzoneHTML('watermark-dropzone', 'watermark-file-input', 'Upload your PDF', 'A text watermark will be stamped on every page')}
             </div>
 
             <div id="watermark-options" class="hidden mt-5">
+                ${this.fileRowHTML('wm-file-name', 'wm-file-info', 'wm-change-btn')}
+
                 <div class="px-1">
                     <div class="font-semibold text-sm mb-2">Watermark text</div>
                     <input type="text" id="watermark-text" value="CONFIDENTIAL" class="border border-[#d1d5db] dark:border-[#404040] px-4 py-2.5 w-full rounded-2xl text-sm">
@@ -37,7 +42,7 @@ export class WatermarkModal extends BaseModal {
                             <div class="font-semibold text-sm mb-1">Rotation</div>
                             <select id="watermark-rotation" class="border border-[#d1d5db] dark:border-[#404040] px-3 py-2 text-sm w-full rounded-2xl">
                                 <option value="0">Horizontal</option>
-                                <option value="45">Diagonal</option>
+                                <option value="45" selected>Diagonal</option>
                                 <option value="-45">Diagonal (reverse)</option>
                             </select>
                         </div>
@@ -56,42 +61,55 @@ export class WatermarkModal extends BaseModal {
     }
 
     protected setupEventListeners(): void {
-        const dropzone = document.getElementById('watermark-dropzone')!;
-        const fileInput = document.getElementById('watermark-file-input') as HTMLInputElement;
-        const watermarkBtn = document.getElementById('watermark-btn')!;
+        this.wireUpload('watermark-dropzone', 'watermark-file-input', files => void this.handleFile(files[0]));
+        this.wireChangeButton('wm-change-btn', 'watermark-upload-area', 'watermark-options', 'watermark-btn');
+        document.getElementById('watermark-btn')!.addEventListener('click', () =>
+            this.run('watermark-btn', 'Adding watermark…', () => this.process()));
+    }
 
-        dropzone.addEventListener('click', () => fileInput.click());
-        
-        fileInput.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            if (target.files?.[0]) this.handleFile(target.files[0]);
+    private async handleFile(file: File): Promise<void> {
+        if (!(await this.inspect(file))) return;
+        this.showOptions('watermark-upload-area', 'watermark-options', 'watermark-btn', 'wm-file-name', 'wm-file-info');
+    }
+
+    private async process(): Promise<void> {
+        const text = ((document.getElementById('watermark-text') as HTMLInputElement).value || 'CONFIDENTIAL').trim();
+        if (!text) {
+            this.showToast('Enter watermark text first.', false, true);
+            return;
+        }
+
+        const opacity = parseInt((document.getElementById('watermark-opacity') as HTMLInputElement).value, 10) / 100;
+        const rotation = parseInt((document.getElementById('watermark-rotation') as HTMLSelectElement).value, 10);
+
+        const { PDFDocument, StandardFonts, rgb, degrees } = await import('pdf-lib');
+        const doc = await PDFDocument.load(this.pdfBytes!, { ignoreEncryption: true });
+        const font = await doc.embedFont(StandardFonts.HelveticaBold);
+        const pages = doc.getPages();
+
+        pages.forEach(page => {
+            const { width, height } = page.getSize();
+            // size the text to span most of the page width
+            const targetWidth = Math.min(width, height) * 0.8;
+            const size = Math.max(12, targetWidth / (text.length * 0.62));
+            const textWidth = font.widthOfTextAtSize(text, size);
+
+            page.drawText(text, {
+                x: (width - textWidth) / 2,
+                y: height / 2 - size / 2,
+                size,
+                font,
+                color: rgb(0.45, 0.45, 0.45),
+                opacity,
+                rotate: degrees(rotation)
+            });
         });
 
-        watermarkBtn.addEventListener('click', () => this.processWatermark());
-    }
+        const bytes = await doc.save();
+        downloadPdf(bytes, outputName(this.fileName, '-watermarked'));
+        recordProcessed({ pdfs: 1, pages: pages.length });
 
-    private handleFile(_file: File): void {
-        const dropzone = document.getElementById('watermark-dropzone')!;
-        const options = document.getElementById('watermark-options')!;
-        const btn = document.getElementById('watermark-btn')!;
-
-        dropzone.style.display = 'none';
-        options.classList.remove('hidden');
-        (btn as HTMLButtonElement).disabled = false;
-    }
-
-    private processWatermark(): void {
-        const btn = document.getElementById('watermark-btn')!;
-        const textInput = document.getElementById('watermark-text') as HTMLInputElement;
-        const text = textInput.value || 'CONFIDENTIAL';
-
-        btn.innerHTML = `<span class="flex items-center gap-x-2"><i class="fa-solid fa-spinner fa-spin"></i> Adding watermark...</span>`;
-        (btn as HTMLButtonElement).disabled = true;
-
-        setTimeout(() => {
-            this.hide();
-            this.showToast(`Watermark "${text}" added successfully!`, true);
-            this.createMockDownload('watermarked-document.pdf', `Watermarked PDF with text: ${text}`);
-        }, 1800);
+        this.hide();
+        this.showToast(`Watermark "${text}" added to ${pages.length} pages.`, true);
     }
 }
