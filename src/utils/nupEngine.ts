@@ -36,10 +36,7 @@ export interface FitPlacement {
     height: number;
 }
 
-export interface FillPlacement extends FitPlacement {
-    /** Crop region of the source page, passed to pdf-lib's embedPage bounding box. */
-    cropBox: { left: number; bottom: number; right: number; top: number };
-}
+export interface FillPlacement extends FitPlacement {}
 
 export const PAPER_SIZES: PaperSizeDef[] = [
     { id: 'a5',      label: 'A5',      widthPt: 419.53, heightPt: 595.28 },
@@ -128,24 +125,12 @@ export function fitPlacement(srcW: number, srcH: number, cell: CellRect): FitPla
 }
 
 /**
- * 'Fill page': scale up preserving aspect ratio until the cell is fully
- * covered; the overflowing part of the source page is cropped (center crop)
- * via the embedPage bounding box.
+ * 'Fill page': stretch the page to cover the entire cell exactly —
+ * no white space and no cropping. Aspect ratio is NOT preserved, so the
+ * page is slightly squeezed when cell and page proportions differ.
  */
-export function fillPlacement(srcW: number, srcH: number, cell: CellRect): FillPlacement {
-    const scale = Math.max(cell.width / srcW, cell.height / srcH);
-    const visibleW = Math.min(srcW, cell.width / scale);
-    const visibleH = Math.min(srcH, cell.height / scale);
-    const left = Math.max(0, (srcW - visibleW) / 2);
-    const bottom = Math.max(0, (srcH - visibleH) / 2);
-
-    return {
-        x: cell.x,
-        y: cell.y,
-        width: cell.width,
-        height: cell.height,
-        cropBox: { left, bottom, right: left + visibleW, top: bottom + visibleH }
-    };
+export function fillPlacement(_srcW: number, _srcH: number, cell: CellRect): FillPlacement {
+    return { x: cell.x, y: cell.y, width: cell.width, height: cell.height };
 }
 
 export function totalSheets(pageCount: number, pagesPerSheet: number): number {

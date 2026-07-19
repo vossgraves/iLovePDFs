@@ -276,7 +276,7 @@
     .nup-cell.fill canvas {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: fill;
     }
 
     .nup-cell.empty {

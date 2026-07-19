@@ -113,12 +113,15 @@ export class NupModal extends BaseModal {
                     <div>
                         <div class="font-semibold text-sm mb-2 px-1">Page scaling</div>
                         <div class="grid grid-cols-2 gap-2" id="nup-scaling-options">
-                            <div class="${CHIP_BASE} ${this.options.scaling === 'fit' ? 'active-option' : ''}" data-value="fit">
+                            <div class="${CHIP_BASE} ${this.options.scaling === 'fit' ? 'active-option' : ''}" data-value="fit" title="Scale to fit inside the cell, keeping proportions (may leave margins)">
                                 <i class="fa-solid fa-down-left-and-up-right-to-center mr-1 text-xs"></i>Fit page
                             </div>
-                            <div class="${CHIP_BASE} ${this.options.scaling === 'fill' ? 'active-option' : ''}" data-value="fill">
+                            <div class="${CHIP_BASE} ${this.options.scaling === 'fill' ? 'active-option' : ''}" data-value="fill" title="Stretch to fill the entire cell - no white space">
                                 <i class="fa-solid fa-up-right-and-down-left-from-center mr-1 text-xs"></i>Fill page
                             </div>
+                        </div>
+                        <div class="text-[10px] text-[#666] dark:text-[#a1a1aa] mt-1.5 px-1">
+                            Fit keeps proportions (may leave margins). Fill stretches to the whole cell — no white space.
                         </div>
                     </div>
 
@@ -461,7 +464,7 @@ export class NupModal extends BaseModal {
                         }
                     } else {
                         const f = fillPlacement(srcW, srcH, cell);
-                        const embedded = await out.embedPage(srcPage, f.cropBox);
+                        const embedded = await out.embedPage(srcPage);
                         outPage.drawPage(embedded, { x: f.x, y: f.y, width: f.width, height: f.height });
 
                         if (this.options.drawBorder) {
