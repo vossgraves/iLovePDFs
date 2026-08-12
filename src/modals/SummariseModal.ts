@@ -1,7 +1,7 @@
 import { ToolModal } from './ToolModal';
 import { ModalManager } from '../utils/modal';
 import { ToastManager } from '../utils/toast';
-import { downloadPdf, outputName, extractPlainText } from '../utils/pdf';
+import { downloadFile, outputName, extractPlainText } from '../utils/pdf';
 import { getAiSettings, saveAiSettings, summarizeText, SummaryStyle } from '../utils/ai';
 import { recordProcessed } from '../utils/stats';
 
@@ -95,7 +95,11 @@ export class SummariseModal extends ToolModal {
             this.showToast('Summary copied to clipboard!');
         });
         document.getElementById('sum-download-btn')!.addEventListener('click', () => {
-            downloadPdf(new TextEncoder().encode(this.summary), outputName(this.fileName, '').replace(/\.pdf$/i, '') + '-summary.md');
+            downloadFile(
+                new TextEncoder().encode(this.summary),
+                outputName(this.fileName, '').replace(/\.pdf$/i, '') + '-summary.md',
+                'text/markdown;charset=utf-8'
+            );
         });
     }
 

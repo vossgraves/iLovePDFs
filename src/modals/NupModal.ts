@@ -12,6 +12,7 @@ import {
     gridFor,
     sheetDims,
     computeCells,
+    effectiveSpacing,
     cellIndexForSlot,
     fitPlacement,
     fillPlacement,
@@ -120,8 +121,8 @@ export class NupModal extends BaseModal {
                                 <i class="fa-solid fa-up-right-and-down-left-from-center mr-1 text-xs"></i>Fill page
                             </div>
                         </div>
-                        <div class="text-[10px] text-[#666] dark:text-[#a1a1aa] mt-1.5 px-1">
-                            Fit keeps proportions (may leave margins). Fill stretches to the whole cell — no white space.
+                        <div id="nup-spacing-note" class="text-[10px] text-[#666] dark:text-[#a1a1aa] mt-1.5 px-1">
+                            Fit keeps proportions (may leave margins). Fill uses the full sheet with 0mm margins and gutters.
                         </div>
                     </div>
 
@@ -153,8 +154,8 @@ export class NupModal extends BaseModal {
                     <div>
                         <div class="font-semibold text-sm mb-2 px-1">Margins & spacing (mm)</div>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="number" id="nup-margin" min="0" max="40" step="1" value="${this.options.marginMm}" title="Sheet margin" class="border border-[#d1d5db] dark:border-[#404040] px-3 py-2 text-sm font-medium rounded-2xl w-full">
-                            <input type="number" id="nup-gutter" min="0" max="40" step="1" value="${this.options.gutterMm}" title="Spacing between pages" class="border border-[#d1d5db] dark:border-[#404040] px-3 py-2 text-sm font-medium rounded-2xl w-full">
+                            <input type="number" id="nup-margin" min="0" max="40" step="1" value="${this.options.marginMm}" title="Sheet margin" class="border border-[#d1d5db] dark:border-[#404040] px-3 py-2 text-sm font-medium rounded-2xl w-full disabled:opacity-50 disabled:cursor-not-allowed">
+                            <input type="number" id="nup-gutter" min="0" max="40" step="1" value="${this.options.gutterMm}" title="Spacing between pages" class="border border-[#d1d5db] dark:border-[#404040] px-3 py-2 text-sm font-medium rounded-2xl w-full disabled:opacity-50 disabled:cursor-not-allowed">
                         </div>
                     </div>
 
@@ -224,6 +225,11 @@ export class NupModal extends BaseModal {
         });
         this.bindChipGroup('nup-scaling-options', value => {
             this.options.scaling = value as NupOptions['scaling'];
+            if (this.options.scaling === 'fill') {
+                this.options.marginMm = 0;
+                this.options.gutterMm = 0;
+            }
+            this.updateSpacingControls();
             this.schedulePreview();
         });
         this.bindChipGroup('nup-orientation-options', value => {
@@ -264,6 +270,8 @@ export class NupModal extends BaseModal {
             this.schedulePreview();
         });
 
+        this.updateSpacingControls();
+
         // Actions
         document.getElementById('nup-process-btn')!.addEventListener('click', () => void this.processNup());
         document.getElementById('nup-change-btn')!.addEventListener('click', () => this.resetUpload());
@@ -284,6 +292,30 @@ export class NupModal extends BaseModal {
         const value = parseInt(raw, 10);
         if (isNaN(value)) return fallback;
         return Math.min(40, Math.max(0, value));
+    }
+
+    private updateSpacingControls(): void {
+        const marginInput = document.getElementById('nup-margin') as HTMLInputElement | null;
+        const gutterInput = document.getElementById('nup-gutter') as HTMLInputElement | null;
+        const note = document.getElementById('nup-spacing-note');
+        if (!marginInput || !gutterInput) return;
+
+        const edgeToEdge = this.options.scaling === 'fill';
+        if (edgeToEdge) {
+            this.options.marginMm = 0;
+            this.options.gutterMm = 0;
+            marginInput.value = '0';
+            gutterInput.value = '0';
+        }
+        marginInput.disabled = edgeToEdge;
+        gutterInput.disabled = edgeToEdge;
+        marginInput.title = edgeToEdge ? 'Fill page uses 0mm margins' : 'Sheet margin';
+        gutterInput.title = edgeToEdge ? 'Fill page uses 0mm gutters' : 'Spacing between pages';
+        if (note) {
+            note.textContent = edgeToEdge
+                ? 'Fill uses every point of the sheet — no outer margins or inter-page white space.'
+                : 'Fit keeps proportions (may leave margins). Fill uses the full sheet with 0mm margins and gutters.';
+        }
     }
 
     // ---------------------------------------------------------------- file
@@ -373,7 +405,8 @@ export class NupModal extends BaseModal {
         const sheet = sheetDims(paper, this.options.orientation);
         const grid = gridFor(this.options.pagesPerSheet, this.options.arrangement);
         const perSheet = grid.rows * grid.cols;
-        const cells = computeCells(sheet, grid, mmToPt(this.options.marginMm), mmToPt(this.options.gutterMm));
+        const spacing = effectiveSpacing(this.options.scaling, mmToPt(this.options.marginMm), mmToPt(this.options.gutterMm));
+        const cells = computeCells(sheet, grid, spacing.marginPt, spacing.gutterPt);
 
         preview.style.aspectRatio = `${sheet.width} / ${sheet.height}`;
         preview.style.width = sheet.width >= sheet.height ? '420px' : '300px';
@@ -436,7 +469,8 @@ export class NupModal extends BaseModal {
             const sheet = sheetDims(paper, this.options.orientation);
             const grid = gridFor(this.options.pagesPerSheet, this.options.arrangement);
             const perSheet = grid.rows * grid.cols;
-            const cells = computeCells(sheet, grid, mmToPt(this.options.marginMm), mmToPt(this.options.gutterMm));
+            const spacing = effectiveSpacing(this.options.scaling, mmToPt(this.options.marginMm), mmToPt(this.options.gutterMm));
+            const cells = computeCells(sheet, grid, spacing.marginPt, spacing.gutterPt);
             const total = src.getPageCount();
             const borderColor = rgb(0.07, 0.07, 0.07);
 

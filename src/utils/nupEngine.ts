@@ -101,6 +101,17 @@ export function computeCells(sheet: SheetDims, grid: GridSpec, marginPt: number,
 }
 
 /**
+ * Fill mode is intentionally edge-to-edge: no outer margin or inter-page gutter
+ * is allowed to create layout whitespace. Fit mode keeps the user-configured
+ * spacing because preserving the source page proportions is its purpose.
+ */
+export function effectiveSpacing(scaling: NupScaling, marginPt: number, gutterPt: number): { marginPt: number; gutterPt: number } {
+    return scaling === 'fill'
+        ? { marginPt: 0, gutterPt: 0 }
+        : { marginPt: Math.max(0, marginPt), gutterPt: Math.max(0, gutterPt) };
+}
+
+/**
  * Maps the n-th placed page (slot, 0-based) to an index into the row-major
  * cells array. 'column-major' fills top-to-bottom first, then moves right.
  */
@@ -128,9 +139,14 @@ export function fitPlacement(srcW: number, srcH: number, cell: CellRect): FitPla
  * 'Fill page': stretch the page to cover the entire cell exactly —
  * no white space and no cropping. Aspect ratio is NOT preserved, so the
  * page is slightly squeezed when cell and page proportions differ.
+ *
+ * The tiny overdraw prevents PDF rasterizers from exposing a hairline at a
+ * shared cell or sheet edge. The sheet clips it, so it cannot create output
+ * outside the requested paper size.
  */
 export function fillPlacement(_srcW: number, _srcH: number, cell: CellRect): FillPlacement {
-    return { x: cell.x, y: cell.y, width: cell.width, height: cell.height };
+    const overdrawPt = 1;
+    return { x: cell.x, y: cell.y, width: cell.width + overdrawPt, height: cell.height + overdrawPt };
 }
 
 export function totalSheets(pageCount: number, pagesPerSheet: number): number {

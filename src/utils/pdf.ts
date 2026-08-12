@@ -28,9 +28,13 @@ export async function inspectPdf(file: File): Promise<InspectedPdf> {
     }
 }
 
-/** Triggers a browser download for generated PDF bytes. */
-export function downloadPdf(data: Uint8Array, filename: string): void {
-    const blob = new Blob([data as unknown as BlobPart], { type: 'application/pdf' });
+/** Triggers a browser download with the correct content type for the generated artifact. */
+export function downloadFile(
+    data: Uint8Array,
+    filename: string,
+    mimeType = 'application/octet-stream'
+): void {
+    const blob = new Blob([data as unknown as BlobPart], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -39,6 +43,11 @@ export function downloadPdf(data: Uint8Array, filename: string): void {
     link.click();
     document.body.removeChild(link);
     setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+/** Convenience wrapper for PDF outputs. */
+export function downloadPdf(data: Uint8Array, filename: string): void {
+    downloadFile(data, filename, 'application/pdf');
 }
 
 /** Strips the .pdf extension and appends a suffix, e.g. report.pdf + '-4up' -> report-4up.pdf */

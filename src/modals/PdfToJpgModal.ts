@@ -1,7 +1,7 @@
 import { ToolModal } from './ToolModal';
 import { ModalManager } from '../utils/modal';
 import { ToastManager } from '../utils/toast';
-import { downloadPdf, renderPdfPages, canvasToBytes } from '../utils/pdf';
+import { downloadFile, renderPdfPages, canvasToBytes } from '../utils/pdf';
 import { recordProcessed } from '../utils/stats';
 
 /**
@@ -85,7 +85,7 @@ export class PdfToJpgModal extends ToolModal {
 
         if (canvases.length === 1) {
             const jpeg = await canvasToBytes(canvases[0], 'image/jpeg', quality);
-            downloadPdf(jpeg, `${base}.jpg`);
+            downloadFile(jpeg, `${base}.jpg`, 'image/jpeg');
         } else {
             const { default: JSZip } = await import('jszip');
             const zip = new JSZip();
@@ -96,7 +96,7 @@ export class PdfToJpgModal extends ToolModal {
             }
 
             const blob = await zip.generateAsync({ type: 'uint8array' });
-            downloadPdf(blob, `${base}-jpg.zip`);
+            downloadFile(blob, `${base}-jpg.zip`, 'application/zip');
         }
 
         recordProcessed({ pdfs: 1, pages: canvases.length });

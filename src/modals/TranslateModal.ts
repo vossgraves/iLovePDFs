@@ -1,7 +1,7 @@
 import { ToolModal } from './ToolModal';
 import { ModalManager } from '../utils/modal';
 import { ToastManager } from '../utils/toast';
-import { downloadPdf, outputName, extractTextByPage } from '../utils/pdf';
+import { downloadFile, downloadPdf, outputName, extractTextByPage } from '../utils/pdf';
 import { recordProcessed } from '../utils/stats';
 
 const LANGS = [
@@ -165,7 +165,11 @@ export class TranslateModal extends ToolModal {
             await this.buildPdf(base, target.label);
         } else {
             const text = this.translatedPages.map((t, i) => `--- Page ${i + 1} ---\n${t}`).join('\n\n');
-            downloadPdf(new TextEncoder().encode(text), base.replace(/\.pdf$/i, '.txt'));
+            downloadFile(
+                new TextEncoder().encode(text),
+                base.replace(/\.pdf$/i, '.txt'),
+                'text/plain;charset=utf-8'
+            );
         }
 
         recordProcessed({ pdfs: 1, pages: this.pageCount });

@@ -1,7 +1,7 @@
 import { ToolModal } from './ToolModal';
 import { ModalManager } from '../utils/modal';
 import { ToastManager } from '../utils/toast';
-import { downloadPdf } from '../utils/pdf';
+import { downloadFile } from '../utils/pdf';
 import { engineConvert } from '../utils/loEngine';
 import { recordProcessed } from '../utils/stats';
 
@@ -123,7 +123,14 @@ export class OfficeConvertModal extends ToolModal {
         const result = await engineConvert(input, inputName, c.outputFormat, (p, m) => this.onProgress(p, m));
 
         const base = inputName.replace(/\.[^.]+$/, '');
-        downloadPdf(result.data, result.filename || `${base}.${c.outputFormat}`);
+        const outputFilename = result.filename || `${base}.${c.outputFormat}`;
+        const mimeTypes: Record<OfficeConvertConfig['outputFormat'], string> = {
+            pdf: 'application/pdf',
+            docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        };
+        downloadFile(result.data, outputFilename, mimeTypes[c.outputFormat]);
         recordProcessed({ pdfs: 1, pages: this.pageCount || 1 });
 
         this.hide();

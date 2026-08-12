@@ -1,7 +1,7 @@
 import { ToolModal } from './ToolModal';
 import { ModalManager } from '../utils/modal';
 import { ToastManager } from '../utils/toast';
-import { downloadPdf, outputName, extractTextByPage } from '../utils/pdf';
+import { downloadFile, outputName, extractTextByPage } from '../utils/pdf';
 import { recordProcessed } from '../utils/stats';
 
 /**
@@ -135,7 +135,11 @@ export class PdfToMarkdownModal extends ToolModal {
             return;
         }
 
-        downloadPdf(new TextEncoder().encode(this.markdown), outputName(this.fileName, '').replace(/\.pdf$/i, '') + '.md');
+        downloadFile(
+            new TextEncoder().encode(this.markdown),
+            outputName(this.fileName, '').replace(/\.pdf$/i, '') + '.md',
+            'text/markdown;charset=utf-8'
+        );
         recordProcessed({ pdfs: 1, pages: this.pageCount });
 
         this.hide();
