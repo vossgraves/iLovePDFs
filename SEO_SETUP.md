@@ -4,13 +4,13 @@ The production build now emits `sitemap.xml` and `robots.txt` into `dist/`. It a
 
 ## Before deploying
 
-Set `SITE_URL` to the real public origin, including `https://` and without a trailing slash. For example:
+The configured production origin is **https://ilovepdf.vossgraves.cyou**. Set `SITE_URL` explicitly during deployment, including `https://` and without a trailing slash:
 
 ```bash
-SITE_URL=https://pdf.example.com npm run build
+SITE_URL=https://ilovepdf.vossgraves.cyou npm run build
 ```
 
-If `SITE_URL` is omitted, the build remains valid but uses `https://example.com` as a visible placeholder and prints a warning. Do not deploy with that placeholder. The build output should contain these files:
+If `SITE_URL` is omitted, the build falls back to `https://ilovepdf.vossgraves.cyou` and prints a warning. Use the explicit command above for production and use a different `SITE_URL` for staging or preview deployments. The build output should contain these files:
 
 | File | Purpose |
 |---|---|
@@ -22,9 +22,9 @@ The current application is a single-page app, so the sitemap intentionally conta
 
 ## Google Search Console
 
-1. Deploy the production build to the real domain and confirm that `https://YOUR-DOMAIN/sitemap.xml` and `https://YOUR-DOMAIN/robots.txt` load publicly in a browser.
+1. Deploy the production build to **https://ilovepdf.vossgraves.cyou** and confirm that `https://ilovepdf.vossgraves.cyou/sitemap.xml` and `https://ilovepdf.vossgraves.cyou/robots.txt` load publicly in a browser.
 2. Open [Google Search Console](https://search.google.com/search-console) and add a property. A **Domain property** covers the domain and its protocol/subdomain variants but requires DNS verification. A **URL-prefix property** is narrower and supports HTML-file or HTML-tag verification.
-3. The simplest option for this Vite deployment is usually **HTML file upload**. Google will give you a file named similar to `google1234567890abcdef.html`. Put that exact file in the repository’s `public/` directory, deploy again, and confirm it is available at `https://YOUR-DOMAIN/google1234567890abcdef.html`. Do not rename it or remove it after verification.
+3. The simplest option for this Vite deployment is usually **HTML file upload**. Google will give you a file named similar to `google1234567890abcdef.html`. Put that exact file in the repository’s `public/` directory, deploy again, and confirm it is available at `https://ilovepdf.vossgraves.cyou/google1234567890abcdef.html`. Do not rename it or remove it after verification.
 4. If you prefer **DNS verification**, add the TXT record Google provides at the domain’s DNS provider. This does not require a code change, but DNS propagation can take time.
 5. If you choose **HTML tag verification**, send the `content` value from Google’s tag to the developer. It can be added to the `<head>` of `index.html`; do not send a password or API key.
 6. After ownership is verified, open the **Sitemaps** report and submit `sitemap.xml` (or the full URL if Search Console requests it). Google will show whether it fetched and parsed the file successfully.
@@ -32,7 +32,7 @@ The current application is a single-page app, so the sitemap intentionally conta
 
 ## What you need to provide
 
-To finish the setup, provide the public production URL and tell the developer which verification method you want to use. If you choose HTML-file verification, upload the Google verification file to the repository or send it here. If you choose HTML-tag verification, provide only the verification token value. If you choose DNS verification, you can perform the DNS change yourself and then tell the developer when it is complete.
+To finish the setup, the public production URL is **https://ilovepdf.vossgraves.cyou**. Tell the developer which verification method you want to use. If you choose HTML-file verification, upload the Google verification file to the repository or send it here. If you choose HTML-tag verification, provide only the verification token value. If you choose DNS verification, you can perform the DNS change yourself and then tell the developer when it is complete.
 
 ## References
 

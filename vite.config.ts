@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 
-const DEFAULT_SITE_URL = 'https://example.com';
+const DEFAULT_SITE_URL = 'https://ilovepdf.vossgraves.cyou';
 
 function normalizedSiteUrl(): string {
   return (process.env.SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, '');
@@ -24,7 +24,7 @@ function staticSeoAssets(): Plugin {
       const siteUrl = normalizedSiteUrl();
 
       if (siteUrl === DEFAULT_SITE_URL) {
-        console.warn('[seo] SITE_URL is not set; generated SEO URLs use https://example.com. Set SITE_URL before deploying.');
+        console.warn(`[seo] SITE_URL is not set; generated SEO URLs use ${DEFAULT_SITE_URL}. Set SITE_URL explicitly for non-production deployments.`);
       }
     },
     transformIndexHtml(html) {
