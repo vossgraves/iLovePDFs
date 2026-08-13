@@ -23,10 +23,10 @@
   <header>
     <div><a href="/">PaperMosaic</a></div>
     <h1>Security</h1>
-    <div class="muted">Draft for publication · Last updated: 13 August 2026</div>
+    <div class="muted">Last updated: 13 August 2026</div>
   </header>
 
-  <div class="notice"><strong>Security contact required.</strong> Before publication, replace the placeholder below with an address that can receive private vulnerability reports.</div>
+  <div class="notice"><strong>Security contact.</strong> Private vulnerability reports may be sent to the public contact identity <strong>Voss Graves</strong> at <a href="mailto:primevideoistaken@gmail.com">primevideoistaken@gmail.com</a>. Do not include passwords, API keys, private documents, or other sensitive data in an initial email.</div>
 
   <p>PaperMosaic is designed as a browser-first document utility. The security boundary depends on the deployment, browser, CDN, third-party providers, and the specific tool a user selects. This page summarizes the current repository design; it is not a security certification or guarantee.</p>
 
@@ -40,7 +40,7 @@
   <p>AI endpoint settings are stored in the browser’s <code>localStorage</code> because the current application is client-only. Do not store a production credential in a shared browser profile. Clear site data after use on a shared device and rotate a key immediately if you believe it was exposed.</p>
 
   <h2>Safe reporting</h2>
-  <p>Do not disclose an unpatched vulnerability, access token, private document, or personal information in a public issue. Before publication, replace this placeholder with a private security address: <strong>[REPLACE WITH A SECURITY CONTACT EMAIL]</strong>. If no private channel is available, open a public issue only with a non-sensitive description and request a private follow-up. The source repository is <a href="https://github.com/vossgraves/iLovePDFs">github.com/vossgraves/iLovePDFs</a>.</p>
+  <p>Do not disclose an unpatched vulnerability, access token, private document, or personal information in a public issue. Private reports may be sent to <strong>Voss Graves</strong> at <a href="mailto:primevideoistaken@gmail.com">primevideoistaken@gmail.com</a>. This is a public contact identity and does not state that Voss Graves is a registered legal entity. If no private channel is available, open a public issue only with a non-sensitive description and request a private follow-up. The source repository is <a href="https://github.com/vossgraves/iLovePDFs">github.com/vossgraves/iLovePDFs</a>.</p>
 
   <h2>Operational checklist for the operator</h2>
   <p>Keep production dependencies and the hosting platform updated, use HTTPS, configure a restrictive Content Security Policy after testing CDN and worker requirements, review third-party endpoints before changing them, avoid collecting unnecessary telemetry, and test generated files before relying on them. A formal security review is recommended before processing regulated or highly confidential material.</p>
