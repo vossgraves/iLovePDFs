@@ -143,6 +143,7 @@ export class EditPdfModal extends ToolModal {
     private gotoPage(index: number): void {
         if (index < 0 || index >= this.pageCount) return;
         this.currentPage = index;
+        this.lastClick = null;
         this.renderStage();
     }
 
@@ -161,7 +162,6 @@ export class EditPdfModal extends ToolModal {
     private renderStage(): void {
         const stage = document.getElementById('ed-stage')!;
         stage.innerHTML = '';
-        this.lastClick = null;
 
         const base = this.baseCanvases[this.currentPage];
         if (!base) return;
