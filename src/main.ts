@@ -196,7 +196,7 @@ class ILovePDFApp {
         this.setupKeyboardShortcuts();
         renderStats();
 
-        console.log('%c[iLovePDF Monochrome] TypeScript app initialized successfully.', 'color:#777');
+        console.log('%c[PaperMosaic] TypeScript app initialized successfully.', 'color:#777');
     }
 
     private renderTools(): void {
@@ -385,7 +385,7 @@ class ILovePDFApp {
                         <div class="space-y-5">
                             <div>
                                 <div class="text-xs font-semibold px-1 mb-1.5">Email address</div>
-                                <input type="email" value="demo@ilovepdf.com" class="border px-4 py-[10px] w-full text-sm rounded-2xl border-[#d1d5db] dark:border-[#404040]">
+                                <input type="email" value="demo@papermosaic.example" class="border px-4 py-[10px] w-full text-sm rounded-2xl border-[#d1d5db] dark:border-[#404040]">
                             </div>
 
                             <div>

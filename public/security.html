@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security | PaperMosaic</title>
+  <meta name="description" content="PaperMosaic security information, local-processing model, external request boundaries, and vulnerability-reporting guidance.">
+  <link rel="canonical" href="https://ilovepdf.vossgraves.cyou/security.html">
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, sans-serif; line-height: 1.65; color: #171717; background: #fafafa; }
+    body { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+    header, footer { border-bottom: 1px solid #ddd; padding-bottom: 20px; margin-bottom: 36px; }
+    footer { border-top: 1px solid #ddd; border-bottom: 0; padding-top: 24px; margin-top: 48px; font-size: .9rem; color: #666; }
+    h1 { line-height: 1.15; margin-bottom: 8px; }
+    h2 { margin-top: 36px; line-height: 1.25; }
+    a { color: inherit; }
+    .muted { color: #666; }
+    .notice { background: #f0f0f0; border-left: 4px solid #171717; padding: 14px 16px; margin: 24px 0; }
+    code { background: #eee; padding: 2px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div><a href="/">PaperMosaic</a></div>
+    <h1>Security</h1>
+    <div class="muted">Draft for publication · Last updated: 13 August 2026</div>
+  </header>
+
+  <div class="notice"><strong>Security contact required.</strong> Before publication, replace the placeholder below with an address that can receive private vulnerability reports.</div>
+
+  <p>PaperMosaic is designed as a browser-first document utility. The security boundary depends on the deployment, browser, CDN, third-party providers, and the specific tool a user selects. This page summarizes the current repository design; it is not a security certification or guarantee.</p>
+
+  <h2>Local processing</h2>
+  <p>Most PDF operations load files into browser memory and produce results locally. The application does not require an account for those operations and has no PaperMosaic upload API in this repository. Users should still treat the browser, extensions, device, downloaded outputs, and hosting environment as part of their security boundary.</p>
+
+  <h2>External request boundaries</h2>
+  <p>AI summarisation sends text to the OpenAI-compatible endpoint and authorization key configured by the user. Translation sends text to the selected translation service. Office conversion downloads public conversion-engine assets. Fonts and icons are loaded from external CDNs. Avoid optional features when a document must remain strictly offline or when the selected provider has not been approved for the document’s sensitivity.</p>
+
+  <h2>Credentials and local storage</h2>
+  <p>AI endpoint settings are stored in the browser’s <code>localStorage</code> because the current application is client-only. Do not store a production credential in a shared browser profile. Clear site data after use on a shared device and rotate a key immediately if you believe it was exposed.</p>
+
+  <h2>Safe reporting</h2>
+  <p>Do not disclose an unpatched vulnerability, access token, private document, or personal information in a public issue. Before publication, replace this placeholder with a private security address: <strong>[REPLACE WITH A SECURITY CONTACT EMAIL]</strong>. If no private channel is available, open a public issue only with a non-sensitive description and request a private follow-up. The source repository is <a href="https://github.com/vossgraves/iLovePDFs">github.com/vossgraves/iLovePDFs</a>.</p>
+
+  <h2>Operational checklist for the operator</h2>
+  <p>Keep production dependencies and the hosting platform updated, use HTTPS, configure a restrictive Content Security Policy after testing CDN and worker requirements, review third-party endpoints before changing them, avoid collecting unnecessary telemetry, and test generated files before relying on them. A formal security review is recommended before processing regulated or highly confidential material.</p>
+
+  <footer><a href="/">PaperMosaic</a> · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="https://github.com/vossgraves/iLovePDFs">Source code</a></footer>
+</body>
+</html>

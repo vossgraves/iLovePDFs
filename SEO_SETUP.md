@@ -1,4 +1,4 @@
-# SEO setup for iLovePDF
+# SEO setup for PaperMosaic
 
 The production build now emits `sitemap.xml` and `robots.txt` into `dist/`. It also replaces the canonical URL, Open Graph URL, and JSON-LD URL with the value of the `SITE_URL` environment variable.
 
@@ -14,11 +14,15 @@ If `SITE_URL` is omitted, the build falls back to `https://ilovepdf.vossgraves.c
 
 | File | Purpose |
 |---|---|
-| `dist/sitemap.xml` | Lists the canonical homepage for search crawlers. |
+| `dist/sitemap.xml` | Lists the canonical homepage and public policy pages for search crawlers. |
 | `dist/robots.txt` | Allows crawling and points crawlers to the sitemap. |
 | `dist/index.html` | Contains the title, description, canonical URL, Open Graph metadata, Twitter metadata, and WebApplication JSON-LD. |
 
-The current application is a single-page app, so the sitemap intentionally contains the homepage only. Tool cards open client-side modals rather than independent crawlable URLs. Adding fake `/merge-pdf` or `/ocr-pdf` URLs would create pages that do not independently render, so dedicated SEO landing pages should be added before those URLs are placed in the sitemap.
+The current application is a single-page app, so the sitemap contains the homepage plus the independently rendered `/privacy.html`, `/terms.html`, and `/security.html` pages. Tool cards open client-side modals rather than independent crawlable URLs. Adding fake `/merge-pdf` or `/ocr-pdf` URLs would create pages that do not independently render, so dedicated SEO landing pages should be added before those URLs are placed in the sitemap.
+
+## Public policy and license pages
+
+The build also publishes `/privacy.html`, `/terms.html`, and `/security.html`. Replace the contact and operator placeholders in those drafts before publishing. The repository is licensed under Apache License 2.0 and includes a `NOTICE` file; redistributors must preserve the license and notices, and a visible “Powered by PaperMosaic” credit is requested where practical.
 
 ## Google Search Console
 

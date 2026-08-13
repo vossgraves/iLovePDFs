@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy | PaperMosaic</title>
+  <meta name="description" content="PaperMosaic privacy policy: browser-first PDF processing, local storage, optional third-party requests, and user controls.">
+  <link rel="canonical" href="https://ilovepdf.vossgraves.cyou/privacy.html">
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, sans-serif; line-height: 1.65; color: #171717; background: #fafafa; }
+    body { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+    header, footer { border-bottom: 1px solid #ddd; padding-bottom: 20px; margin-bottom: 36px; }
+    footer { border-top: 1px solid #ddd; border-bottom: 0; padding-top: 24px; margin-top: 48px; font-size: .9rem; color: #666; }
+    h1 { line-height: 1.15; margin-bottom: 8px; }
+    h2 { margin-top: 36px; line-height: 1.25; }
+    a { color: inherit; }
+    .muted { color: #666; }
+    .notice { background: #f0f0f0; border-left: 4px solid #171717; padding: 14px 16px; margin: 24px 0; }
+    code { background: #eee; padding: 2px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div><a href="/">PaperMosaic</a></div>
+    <h1>Privacy Policy</h1>
+    <div class="muted">Draft for publication · Last updated: 13 August 2026</div>
+  </header>
+
+  <div class="notice"><strong>Review before publication.</strong> This draft describes the current repository implementation. Replace the contact details below and have a qualified lawyer review it for the jurisdictions in which you operate.</div>
+
+  <p>PaperMosaic is a browser-based PDF toolkit operated through <a href="https://ilovepdf.vossgraves.cyou/">https://ilovepdf.vossgraves.cyou/</a> and its open-source repository. This policy explains what information the application handles, where it goes, and what choices users have.</p>
+
+  <h2>1. Files processed in the browser</h2>
+  <p>For the PDF editing and conversion operations implemented in this repository, files are loaded into the user’s browser and processed there. PaperMosaic does not intentionally upload those files to a PaperMosaic application server. Files may remain temporarily in browser memory while a tool is open and are released when the page or modal is closed, subject to the browser’s own behavior.</p>
+
+  <h2>2. Information stored on the device</h2>
+  <p>The application uses browser <code>localStorage</code> for limited, device-local state. The current implementation stores theme preference, anonymous per-device processing counters, and—in the AI Summariser settings—the user-provided OpenAI-compatible endpoint, model name, and API key. These values are not sent to PaperMosaic’s server by this client-only application. Do not save a key in a shared or untrusted browser profile; anyone with access to that profile may be able to inspect local storage.</p>
+
+  <h2>3. Optional third-party requests</h2>
+  <p>Some tools make network requests only when the user chooses the relevant feature. The AI Summariser sends extracted PDF text and the user’s configured authorization header to the endpoint the user enters, such as an OpenAI-compatible provider. Translate PDF sends text and language parameters to MyMemory’s translation API. Office conversion may download conversion engine assets from public package or hosting URLs. The application also loads font and icon assets from Google Fonts and cdnjs. Those providers process requests under their own terms and privacy policies; users should review them before using optional features.</p>
+
+  <h2>4. Analytics, advertising, and cookies</h2>
+  <p>The current repository does not intentionally include an analytics SDK, advertising tracker, or application cookie. The hosting provider, CDN, or security layer used to publish the site may create technical logs or cookies outside this repository. Configure and disclose those services separately if they are enabled in production.</p>
+
+  <h2>5. Information PaperMosaic receives</h2>
+  <p>PaperMosaic does not require an account for the browser tools and does not intentionally collect names, email addresses, PDF contents, or payment information through the current client-only implementation. If you contact the maintainers through GitHub, GitHub will process the information associated with that interaction under GitHub’s own policies.</p>
+
+  <h2>6. Your choices</h2>
+  <p>You can remove device-local PaperMosaic data through your browser’s site-data or local-storage controls. You can avoid optional AI and translation features if you do not want text sent to the selected provider. You can also use the core local-processing tools without entering an API key. Clearing site data may remove local settings and counters.</p>
+
+  <h2>7. Children and legal compliance</h2>
+  <p>PaperMosaic is a general-purpose utility and is not directed at children. Users are responsible for ensuring that their use of the tools complies with applicable privacy, confidentiality, copyright, export-control, and other laws. Do not process documents when you lack permission to do so.</p>
+
+  <h2>8. Changes and contact</h2>
+  <p>This policy may be updated when the application or its deployment changes. The version published at this URL is the current version. Before publication, replace this sentence with a real privacy contact: <strong>[REPLACE WITH A PRIVACY CONTACT EMAIL OR POSTAL ADDRESS]</strong>. For non-sensitive project questions, the repository is available at <a href="https://github.com/vossgraves/iLovePDFs">github.com/vossgraves/iLovePDFs</a>; do not post confidential personal information in a public issue.</p>
+
+  <footer><a href="/">PaperMosaic</a> · <a href="/terms.html">Terms</a> · <a href="/security.html">Security</a> · <a href="https://github.com/vossgraves/iLovePDFs">Source code</a></footer>
+</body>
+</html>
