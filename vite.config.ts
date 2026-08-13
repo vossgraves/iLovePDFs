@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 
-const DEFAULT_SITE_URL = 'https://ilovepdf.vossgraves.cyou';
+const DEFAULT_SITE_URL = 'https://papermosaic.vossgraves.cyou';
 
 function normalizedSiteUrl(): string {
   return (process.env.SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, '');
