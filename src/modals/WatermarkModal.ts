@@ -47,6 +47,7 @@ export class WatermarkModal extends ToolModal {
                             </select>
                         </div>
                     </div>
+                    <div class="text-[11px] text-[#666] dark:text-[#a1a1aa] mt-2">Opacity controls how faint the text looks; rotation angles it across the page so it's less intrusive to read through.</div>
                 </div>
             </div>
         `;

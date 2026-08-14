@@ -98,6 +98,7 @@ export class NupModal extends BaseModal {
                     <!-- Pages per sheet -->
                     <div class="md:col-span-2">
                         <div class="font-semibold text-sm mb-2 px-1">Pages per sheet</div>
+                        <div class="text-[11px] text-[#666] dark:text-[#a1a1aa] mb-2 px-1">How many original pages to combine onto each printed sheet, e.g. 4-up prints 4 pages shrunk onto 1.</div>
                         <div class="flex flex-wrap gap-2" id="nup-count-options">${nupChips}</div>
                     </div>
 

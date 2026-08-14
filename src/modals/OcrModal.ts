@@ -2,7 +2,21 @@ import { ToolModal } from './ToolModal';
 import { ModalManager } from '../utils/modal';
 import { ToastManager } from '../utils/toast';
 import { downloadPdf, outputName, renderPdfPages, canvasToBytes } from '../utils/pdf';
+import { enhanceForOcr } from '../utils/images';
 import { recordProcessed } from '../utils/stats';
+
+interface QualityPreset {
+    id: string;
+    label: string;
+    sub: string;
+    dpi: number;
+}
+
+const QUALITY_PRESETS: QualityPreset[] = [
+    { id: 'fast', label: 'Fast', sub: '150 DPI · quickest', dpi: 150 },
+    { id: 'balanced', label: 'Balanced', sub: '200 DPI · recommended', dpi: 200 },
+    { id: 'best', label: 'Best', sub: '300 DPI · most accurate', dpi: 300 }
+];
 
 const LANGUAGES = [
     { id: 'eng', label: 'English' },
@@ -27,6 +41,8 @@ interface OcrWord {
  * PDF (page image + invisible text layer).
  */
 export class OcrModal extends ToolModal {
+    private quality: QualityPreset = QUALITY_PRESETS[1];
+
     constructor(modalManager: ModalManager, toastManager: ToastManager) {
         super('ocr-modal', modalManager, toastManager);
     }
@@ -39,6 +55,13 @@ export class OcrModal extends ToolModal {
 
     private renderModal(): void {
         const container = document.getElementById('modal-container')!;
+
+        const qualityChips = QUALITY_PRESETS.map(p => `
+            <div class="option-chip cursor-pointer px-3 py-2.5 bg-[#f4f4f5] dark:bg-[#262626] hover:bg-[#e5e5e5] dark:hover:bg-[#333333] rounded-2xl text-center ${p.id === this.quality.id ? 'active-option' : ''}" data-quality="${p.id}">
+                <div class="font-semibold text-sm">${p.label}</div>
+                <div class="text-[10px] opacity-70 mt-0.5">${p.sub}</div>
+            </div>
+        `).join('');
 
         const content = `
             <div id="ocr-upload-area">
@@ -53,10 +76,21 @@ export class OcrModal extends ToolModal {
                     <select id="ocr-lang" class="w-full border border-[#d1d5db] dark:border-[#404040] px-3 py-2 text-sm font-medium rounded-2xl">
                         ${LANGUAGES.map(l => `<option value="${l.id}" ${l.id === 'eng' ? 'selected' : ''}>${l.label}</option>`).join('')}
                     </select>
+                    <div class="text-[11px] text-[#666] dark:text-[#a1a1aa] mt-1">Pick the language the scan is mostly written in — matching it improves accuracy a lot.</div>
+
+                    <div class="font-semibold text-sm mb-1.5 mt-4">Recognition quality</div>
+                    <div class="grid grid-cols-3 gap-2" id="ocr-quality-options">${qualityChips}</div>
+                    <div class="text-[11px] text-[#666] dark:text-[#a1a1aa] mt-1">Higher DPI reads smaller text more reliably but takes longer per page.</div>
+
+                    <div class="flex items-center gap-x-2 mt-4">
+                        <input type="checkbox" id="ocr-enhance" checked class="accent-black dark:accent-white">
+                        <label for="ocr-enhance" class="text-sm">Enhance scan before reading text (recommended)</label>
+                    </div>
+                    <div class="text-[11px] text-[#666] dark:text-[#a1a1aa] mt-1 ml-6">Auto-corrects contrast on faint or unevenly lit scans — free, runs locally, doesn't change the page image you keep.</div>
 
                     <div class="text-xs text-[#666] dark:text-[#a1a1aa] mt-3">
                         <i class="fa-solid fa-circle-info mr-1"></i>
-                        First run downloads the OCR engine and language data (~15MB). Output keeps the page look with a selectable text layer on top.
+                        Runs fully in your browser with Tesseract OCR — no account, no upload to a server. First run downloads the recognition engine and language data (~15MB). Output keeps the page look with a selectable text layer on top.
                     </div>
 
                     <div id="ocr-progress-wrap" class="hidden mt-3">
@@ -84,6 +118,15 @@ export class OcrModal extends ToolModal {
     protected setupEventListeners(): void {
         this.wireUpload('ocr-dropzone', 'ocr-file-input', files => void this.handleFile(files[0]));
         this.wireChangeButton('ocr-change-btn', 'ocr-upload-area', 'ocr-options-area', 'ocr-process-btn');
+
+        document.querySelectorAll('#ocr-quality-options .option-chip').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('#ocr-quality-options .option-chip').forEach(e => e.classList.remove('active-option'));
+                el.classList.add('active-option');
+                this.quality = QUALITY_PRESETS.find(p => p.id === (el as HTMLElement).dataset.quality) ?? this.quality;
+            });
+        });
+
         document.getElementById('ocr-process-btn')!.addEventListener('click', () =>
             this.run('ocr-process-btn', 'Running OCR…', () => this.process()));
     }
@@ -104,7 +147,8 @@ export class OcrModal extends ToolModal {
 
     private async process(): Promise<void> {
         const lang = (document.getElementById('ocr-lang') as HTMLSelectElement).value;
-        const dpi = 150;
+        const enhance = (document.getElementById('ocr-enhance') as HTMLInputElement).checked;
+        const dpi = this.quality.dpi;
 
         const { createWorker } = await import('tesseract.js');
         const { PDFDocument, StandardFonts } = await import('pdf-lib');
@@ -127,7 +171,16 @@ export class OcrModal extends ToolModal {
                 const canvas = canvases[i];
                 this.onProgress(Math.round(((i + 1) / canvases.length) * 90) + 5, `Page ${i + 1} of ${canvases.length}…`);
 
-                const result = await worker.recognize(canvas);
+                let ocrCanvas = canvas;
+                if (enhance) {
+                    ocrCanvas = document.createElement('canvas');
+                    ocrCanvas.width = canvas.width;
+                    ocrCanvas.height = canvas.height;
+                    ocrCanvas.getContext('2d')!.drawImage(canvas, 0, 0);
+                    enhanceForOcr(ocrCanvas);
+                }
+
+                const result = await worker.recognize(ocrCanvas);
                 const words = (result.data.words ?? []) as OcrWord[];
 
                 const pageW = (canvas.width * 72) / dpi;

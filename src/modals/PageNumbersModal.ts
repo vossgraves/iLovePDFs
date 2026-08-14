@@ -61,6 +61,7 @@ export class PageNumbersModal extends ToolModal {
                         <input type="number" id="pn-size" min="6" max="36" step="1" value="11" class="border border-[#d1d5db] dark:border-[#404040] px-3 py-2 text-sm font-medium rounded-2xl w-full">
                     </div>
                 </div>
+                <div class="text-[11px] text-[#666] dark:text-[#a1a1aa] mt-2 px-1">"Start at" sets the number on the first page — use 0 if the cover page shouldn't count as page 1.</div>
             </div>
         `;
 

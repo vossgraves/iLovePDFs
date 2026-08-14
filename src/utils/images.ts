@@ -35,6 +35,36 @@ async function embedImage(pdf: import('pdf-lib').PDFDocument, bytes: ArrayBuffer
     return pdf.embedJpg(jpeg);
 }
 
+/**
+ * Grayscale + contrast-stretch a canvas in place. Cheap, dependency-free
+ * preprocessing that measurably improves Tesseract accuracy on low-contrast
+ * or unevenly lit scans — no external service involved.
+ */
+export function enhanceForOcr(canvas: HTMLCanvasElement): void {
+    const ctx = canvas.getContext('2d')!;
+    const { width, height } = canvas;
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    const gray = new Uint8ClampedArray(width * height);
+    let min = 255;
+    let max = 0;
+    for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+        const g = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        gray[p] = g;
+        if (g < min) min = g;
+        if (g > max) max = g;
+    }
+
+    const range = Math.max(1, max - min);
+    for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+        const stretched = ((gray[p] - min) / range) * 255;
+        data[i] = data[i + 1] = data[i + 2] = stretched;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+}
+
 export async function imagesToPdf(files: File[], options: ImagesToPdfOptions): Promise<Uint8Array> {
     if (files.length === 0) throw new Error('Add at least one image.');
 
